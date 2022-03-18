@@ -29,7 +29,13 @@ namespace Neo.Cryptography
         public static extern IntPtr gt_mul(IntPtr gt, int multi);
 
         [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void g_dispose(IntPtr rawPtr);
+        public static extern void gt_dispose(IntPtr rawPtr);
+
+        [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void g1_dispose(IntPtr rawPtr);
+
+        [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void g2_dispose(IntPtr rawPtr);
 
         [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr g1_g2_pairing(IntPtr g1, IntPtr g2);
@@ -142,7 +148,24 @@ namespace Neo.Cryptography
         {
             try
             {
-                Bls12381.g_dispose(ptr);
+
+                if(type == GType.G1)
+                {
+                    Bls12381.g1_dispose(ptr);
+                }
+                else if(type == GType.G2)
+                {
+                    Bls12381.g2_dispose(ptr);
+                }
+                else if(type == GType.Gt)
+                {
+                    Bls12381.gt_dispose(ptr);
+                }
+                else
+                {
+                    throw new Exception("Bls12 error: point type missmatched");
+                }
+                
             }
             catch (Exception)
             {
