@@ -22,22 +22,22 @@ namespace Neo.Cryptography
     {
 
 
-        [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("bls12381", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr gt_add(IntPtr gt1, IntPtr gt2);
 
-        [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("bls12381", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr gt_mul(IntPtr gt, int multi);
 
-        [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("bls12381", CallingConvention = CallingConvention.Cdecl)]
         public static extern void gt_dispose(IntPtr rawPtr);
 
-        [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("bls12381", CallingConvention = CallingConvention.Cdecl)]
         public static extern void g1_dispose(IntPtr rawPtr);
 
-        [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("bls12381", CallingConvention = CallingConvention.Cdecl)]
         public static extern void g2_dispose(IntPtr rawPtr);
 
-        [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("bls12381", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr g1_g2_pairing(IntPtr g1, IntPtr g2);
 
 
