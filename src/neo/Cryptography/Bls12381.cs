@@ -8,6 +8,8 @@
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
+
+
 using System;
 using System.Runtime.InteropServices;
 
@@ -18,17 +20,26 @@ namespace Neo.Cryptography
     /// </summary>
     public static class Bls12381
     {
-        [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
+
+
+        [DllImport("bls12381", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr gt_add(IntPtr gt1, IntPtr gt2);
 
-        [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("bls12381", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr gt_mul(IntPtr gt, int multi);
 
-        [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void g_dispose(IntPtr rawPtr);
+        [DllImport("bls12381", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void gt_dispose(IntPtr rawPtr);
 
-        [DllImport("bls12381.dylib", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("bls12381", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void g1_dispose(IntPtr rawPtr);
+
+        [DllImport("bls12381", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void g2_dispose(IntPtr rawPtr);
+
+        [DllImport("bls12381", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr g1_g2_pairing(IntPtr g1, IntPtr g2);
+
 
         /// <summary>
         /// Add operation of two gt point
@@ -39,18 +50,25 @@ namespace Neo.Cryptography
         public static byte[] Point_Add(byte[] gt1_bytes, byte[] gt2_bytes)
         {
             GObject gt1 = new GObject(gt1_bytes);
+
             GObject gt2 = new GObject(gt2_bytes);
+
             IntPtr result = IntPtr.Zero;
+
             try
             {
                 result = gt_add(gt1.ptr, gt2.ptr);
             }
             catch (Exception e)
             {
-                throw new Exception($"Bls12381 point add fault,error:{e}");
+                throw new Exception("Bls12 dll error: Add error:" + e);
             }
+
+
             byte[] buffer = result.ToByteArray((int)GType.Gt);
+
             return buffer;
+
         }
 
         /// <summary>
@@ -62,6 +80,7 @@ namespace Neo.Cryptography
         public static byte[] Point_Mul(byte[] gt_bytes, int multi)
         {
             GObject gt = new GObject(gt_bytes);
+
             IntPtr result = IntPtr.Zero;
             try
             {
@@ -69,9 +88,10 @@ namespace Neo.Cryptography
             }
             catch (Exception e)
             {
-                throw new Exception($"Bls12381 point mul fault,error:{e}");
+                throw new Exception("Bls12 dll error: Mul error:" + e);
             }
             byte[] buffer = result.ToByteArray((int)GType.Gt);
+
             return buffer;
         }
 
@@ -84,48 +104,76 @@ namespace Neo.Cryptography
         public static byte[] Point_Pairing(byte[] g1_bytes, byte[] g2_bytes)
         {
             GObject g1 = new GObject(g1_bytes);
+
             GObject g2 = new GObject(g2_bytes);
+
             IntPtr result = IntPtr.Zero;
+
             try
             {
                 result = g1_g2_pairing(g1.ptr, g2.ptr);
             }
             catch (Exception e)
             {
-                throw new Exception($"Bls12381 point pairing fault,error:{e}");
+                throw new Exception("Bls12 dll error: Pairing error:" + e);
             }
+
             byte[] buffer = result.ToByteArray(576);
+
             return buffer;
+
         }
+
     }
 
     internal class GObject
     {
         public IntPtr ptr;
         public GType type;
-
         public GObject(byte[] g)
         {
             int len = g.Length;
+
             if (len == (int)GType.G1 || len == (int)GType.G2 || len == (int)GType.Gt)
             {
                 Marshal.Copy(g, 0, ptr, len);
                 type = (GType)len;
+
             }
-            else throw new FormatException("Valid Bls12381 point length");
+
+            else throw new Exception("Bls12_381:valid point length");
         }
 
         ~GObject()
         {
             try
             {
-                Bls12381.g_dispose(ptr);
+
+                if (type == GType.G1)
+                {
+                    Bls12381.g1_dispose(ptr);
+                }
+                else if (type == GType.G2)
+                {
+                    Bls12381.g2_dispose(ptr);
+                }
+                else if (type == GType.Gt)
+                {
+                    Bls12381.gt_dispose(ptr);
+                }
+                else
+                {
+                    throw new Exception("Bls12 error: point type missmatched");
+                }
+
             }
             catch (Exception)
             {
-                throw new Exception("Bls12381 dispose fault");
+                throw new Exception("Bls12 dll error: dispose failed");
             }
+
         }
+
     }
 
     internal enum GType
@@ -134,4 +182,7 @@ namespace Neo.Cryptography
         G2 = 192,
         Gt = 576
     }
+
+
+
 }
