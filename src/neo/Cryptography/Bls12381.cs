@@ -61,7 +61,7 @@ namespace Neo.Cryptography
             }
             catch (Exception e)
             {
-                throw new Exception("Bls12 dll error: Add error:" + e);
+                throw new Exception($"Bls12381 point add fault,error:{e}");
             }
 
 
@@ -88,7 +88,7 @@ namespace Neo.Cryptography
             }
             catch (Exception e)
             {
-                throw new Exception("Bls12 dll error: Mul error:" + e);
+                throw new Exception($"Bls12381 point mul fault,error:{e}");
             }
             byte[] buffer = result.ToByteArray((int)GType.Gt);
 
@@ -115,7 +115,7 @@ namespace Neo.Cryptography
             }
             catch (Exception e)
             {
-                throw new Exception("Bls12 dll error: Pairing error:" + e);
+                throw new Exception($"Bls12381 point pairing fault,error:{e}");
             }
 
             byte[] buffer = result.ToByteArray(576);
@@ -141,7 +141,7 @@ namespace Neo.Cryptography
 
             }
 
-            else throw new Exception("Bls12_381:valid point length");
+            else throw new FormatException("Valid Bls12381 point length");
         }
 
         ~GObject()
@@ -163,13 +163,13 @@ namespace Neo.Cryptography
                 }
                 else
                 {
-                    throw new Exception("Bls12 error: point type missmatched");
+                    throw new Exception("Bls12381 point type missmatched");
                 }
 
             }
             catch (Exception)
             {
-                throw new Exception("Bls12 dll error: dispose failed");
+                throw new Exception("Bls12381 dispose fault");
             }
 
         }
