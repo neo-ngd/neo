@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Copyright>2015-2021 The Neo Project</Copyright>
     <AssemblyTitle>NeoJQ</AssemblyTitle>
-    <VersionPrefix>1.1.1</VersionPrefix>
+    <VersionPrefix>1.2.0</VersionPrefix>
     <Authors>The Neo Project</Authors>
     <TargetFramework>net6.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
