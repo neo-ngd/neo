@@ -163,9 +163,10 @@ namespace Neo
 
         public void Dispose()
         {
+            EnsureStopped(LocalNode);
+            EnsureStopped(Blockchain);
             foreach (var p in Plugin.Plugins)
                 p.Dispose();
-            EnsureStopped(LocalNode);
             // Dispose will call ActorSystem.Terminate()
             ActorSystem.Dispose();
             ActorSystem.WhenTerminated.Wait();
@@ -276,6 +277,17 @@ namespace Neo
         {
             if (MemPool.ContainsKey(hash)) return true;
             return NativeContract.Ledger.ContainsTransaction(StoreView, hash);
+        }
+
+        /// <summary>
+        /// Determines whether the specified transaction conflicts with some on-chain transaction.
+        /// </summary>
+        /// <param name="hash">The hash of the transaction</param>
+        /// <param name="signers">The list of signer accounts of the transaction</param>
+        /// <returns><see langword="true"/> if the transaction conflicts with on-chain transaction; otherwise, <see langword="false"/>.</returns>
+        public bool ContainsConflictHash(UInt256 hash, IEnumerable<UInt160> signers)
+        {
+            return NativeContract.Ledger.ContainsConflictHash(StoreView, hash, signers);
         }
     }
 }
