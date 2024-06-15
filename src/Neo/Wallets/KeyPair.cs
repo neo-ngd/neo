@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// KeyPair.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -47,14 +48,14 @@ namespace Neo.Wallets
         {
             if (privateKey.Length != 32 && privateKey.Length != 96 && privateKey.Length != 104)
                 throw new ArgumentException(null, nameof(privateKey));
-            this.PrivateKey = privateKey[^32..];
+            PrivateKey = privateKey[^32..];
             if (privateKey.Length == 32)
             {
-                this.PublicKey = Cryptography.ECC.ECCurve.Secp256r1.G * privateKey;
+                PublicKey = Cryptography.ECC.ECCurve.Secp256r1.G * privateKey;
             }
             else
             {
-                this.PublicKey = Cryptography.ECC.ECPoint.FromBytes(privateKey, Cryptography.ECC.ECCurve.Secp256r1);
+                PublicKey = Cryptography.ECC.ECPoint.FromBytes(privateKey, Cryptography.ECC.ECCurve.Secp256r1);
             }
         }
 

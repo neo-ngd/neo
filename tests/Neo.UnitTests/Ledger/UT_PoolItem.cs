@@ -1,3 +1,14 @@
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// UT_PoolItem.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
+// for more details.
+//
+// Redistribution and use in source and binary forms with or without
+// modifications are permitted.
+
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -36,11 +47,11 @@ namespace Neo.UnitTests.Ledger
         public void PoolItem_CompareTo_Fee()
         {
             int size1 = 51;
-            int netFeeSatoshi1 = 1;
-            var tx1 = GenerateTx(netFeeSatoshi1, size1);
+            int netFeeDatoshi1 = 1;
+            var tx1 = GenerateTx(netFeeDatoshi1, size1);
             int size2 = 51;
-            int netFeeSatoshi2 = 2;
-            var tx2 = GenerateTx(netFeeSatoshi2, size2);
+            int netFeeDatoshi2 = 2;
+            var tx2 = GenerateTx(netFeeDatoshi2, size2);
 
             PoolItem pitem1 = new PoolItem(tx1);
             PoolItem pitem2 = new PoolItem(tx2);
@@ -56,10 +67,10 @@ namespace Neo.UnitTests.Ledger
         public void PoolItem_CompareTo_Hash()
         {
             int sizeFixed = 51;
-            int netFeeSatoshiFixed = 1;
+            int netFeeDatoshiFixed = 1;
 
-            var tx1 = GenerateTxWithFirstByteOfHashGreaterThanOrEqualTo(0x80, netFeeSatoshiFixed, sizeFixed);
-            var tx2 = GenerateTxWithFirstByteOfHashLessThanOrEqualTo(0x79, netFeeSatoshiFixed, sizeFixed);
+            var tx1 = GenerateTxWithFirstByteOfHashGreaterThanOrEqualTo(0x80, netFeeDatoshiFixed, sizeFixed);
+            var tx2 = GenerateTxWithFirstByteOfHashLessThanOrEqualTo(0x79, netFeeDatoshiFixed, sizeFixed);
 
             tx1.Attributes = new TransactionAttribute[] { new HighPriorityAttribute() };
 
@@ -72,8 +83,8 @@ namespace Neo.UnitTests.Ledger
             // Bulk test
             for (int testRuns = 0; testRuns < 30; testRuns++)
             {
-                tx1 = GenerateTxWithFirstByteOfHashGreaterThanOrEqualTo(0x80, netFeeSatoshiFixed, sizeFixed);
-                tx2 = GenerateTxWithFirstByteOfHashLessThanOrEqualTo(0x79, netFeeSatoshiFixed, sizeFixed);
+                tx1 = GenerateTxWithFirstByteOfHashGreaterThanOrEqualTo(0x80, netFeeDatoshiFixed, sizeFixed);
+                tx2 = GenerateTxWithFirstByteOfHashLessThanOrEqualTo(0x79, netFeeDatoshiFixed, sizeFixed);
 
                 pitem1 = new PoolItem(tx1);
                 pitem2 = new PoolItem(tx2);
@@ -92,8 +103,8 @@ namespace Neo.UnitTests.Ledger
         public void PoolItem_CompareTo_Equals()
         {
             int sizeFixed = 500;
-            int netFeeSatoshiFixed = 10;
-            var tx = GenerateTx(netFeeSatoshiFixed, sizeFixed, new byte[] { 0x13, 0x37 });
+            int netFeeDatoshiFixed = 10;
+            var tx = GenerateTx(netFeeDatoshiFixed, sizeFixed, new byte[] { 0x13, 0x37 });
 
             PoolItem pitem1 = new PoolItem(tx);
             PoolItem pitem2 = new PoolItem(tx);

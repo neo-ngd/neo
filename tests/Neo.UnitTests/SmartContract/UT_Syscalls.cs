@@ -1,5 +1,17 @@
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// UT_Syscalls.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
+// for more details.
+//
+// Redistribution and use in source and binary forms with or without
+// modifications are permitted.
+
 using Akka.TestKit.Xunit2;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Neo.Cryptography.ECC;
 using Neo.IO;
 using Neo.Network.P2P.Payloads;
 using Neo.SmartContract;
@@ -70,7 +82,7 @@ namespace Neo.UnitTests.SmartContract
             const byte Prefix_CurrentBlock = 12;
 
             var height = snapshot[NativeContract.Ledger.CreateStorageKey(Prefix_CurrentBlock)].GetInteroperable<HashIndexState>();
-            height.Index = block.Index + ProtocolSettings.Default.MaxTraceableBlocks;
+            height.Index = block.Index + TestProtocolSettings.Default.MaxTraceableBlocks;
 
             UT_SmartContractHelper.BlocksAdd(snapshot, block.Hash, block);
             snapshot.Add(NativeContract.Ledger.CreateStorageKey(Prefix_Transaction, tx.Hash), new StorageItem(new TransactionState
@@ -121,7 +133,16 @@ namespace Neo.UnitTests.SmartContract
             var tx = new Transaction()
             {
                 Script = new byte[] { 0x01 },
-                Signers = new Signer[] { new Signer() { Account = UInt160.Zero, Scopes = WitnessScope.None } },
+                Signers = new Signer[] {
+                    new Signer()
+                    {
+                        Account = UInt160.Zero,
+                        Scopes = WitnessScope.None,
+                        AllowedContracts = Array.Empty<UInt160>(),
+                        AllowedGroups = Array.Empty<ECPoint>(),
+                        Rules = Array.Empty<WitnessRule>(),
+                    }
+                },
                 Attributes = Array.Empty<TransactionAttribute>(),
                 NetworkFee = 0x02,
                 SystemFee = 0x03,
@@ -236,7 +257,7 @@ namespace Neo.UnitTests.SmartContract
 
                 // Execute
 
-                var engine = ApplicationEngine.Create(TriggerType.Application, null, snapshot);
+                var engine = ApplicationEngine.Create(TriggerType.Application, null, snapshot, null, ProtocolSettings.Default);
                 engine.LoadScript(script.ToArray());
                 Assert.AreEqual(VMState.HALT, engine.Execute());
 

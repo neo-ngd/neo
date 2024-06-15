@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// ContractTask.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -15,7 +16,7 @@ namespace Neo.SmartContract
     [AsyncMethodBuilder(typeof(ContractTaskMethodBuilder))]
     class ContractTask
     {
-        private readonly ContractTaskAwaiter awaiter;
+        protected readonly ContractTaskAwaiter _awaiter;
 
         public static ContractTask CompletedTask { get; }
 
@@ -27,23 +28,29 @@ namespace Neo.SmartContract
 
         public ContractTask()
         {
-            awaiter = CreateAwaiter();
+            _awaiter = CreateAwaiter();
         }
 
         protected virtual ContractTaskAwaiter CreateAwaiter() => new();
-
-        public virtual ContractTaskAwaiter GetAwaiter() => awaiter;
-
+        public ContractTaskAwaiter GetAwaiter() => _awaiter;
         public virtual object GetResult() => null;
     }
 
     [AsyncMethodBuilder(typeof(ContractTaskMethodBuilder<>))]
     class ContractTask<T> : ContractTask
     {
-        protected override ContractTaskAwaiter<T> CreateAwaiter() => new();
+        public new static ContractTask<T> CompletedTask { get; }
 
-        public override ContractTaskAwaiter<T> GetAwaiter() => (ContractTaskAwaiter<T>)base.GetAwaiter();
+        static ContractTask()
+        {
+            CompletedTask = new ContractTask<T>();
+            CompletedTask.GetAwaiter().SetResult();
+        }
 
+        protected override ContractTaskAwaiter CreateAwaiter() => new ContractTaskAwaiter<T>();
+#pragma warning disable CS0108 // Member hides inherited member; missing new keyword
+        public ContractTaskAwaiter<T> GetAwaiter() => (ContractTaskAwaiter<T>)_awaiter;
+#pragma warning restore CS0108 // Member hides inherited member; missing new keyword
         public override object GetResult() => GetAwaiter().GetResult();
     }
 }

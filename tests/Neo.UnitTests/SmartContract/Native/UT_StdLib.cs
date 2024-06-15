@@ -1,3 +1,14 @@
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// UT_StdLib.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
+// for more details.
+//
+// Redistribution and use in source and binary forms with or without
+// modifications are permitted.
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Neo.SmartContract;
 using Neo.SmartContract.Native;
@@ -207,6 +218,47 @@ namespace Neo.UnitTests.SmartContract.Native
             Assert.AreEqual(2, arr.Count);
             Assert.AreEqual("a", arr[0].GetString());
             Assert.AreEqual("b", arr[1].GetString());
+        }
+
+        [TestMethod]
+        public void StringElementLength()
+        {
+            var snapshot = TestBlockchain.GetTestSnapshot();
+
+            using var script = new ScriptBuilder();
+            script.EmitDynamicCall(NativeContract.StdLib.Hash, "strLen", "🦆");
+            script.EmitDynamicCall(NativeContract.StdLib.Hash, "strLen", "ã");
+            script.EmitDynamicCall(NativeContract.StdLib.Hash, "strLen", "a");
+
+            using var engine = ApplicationEngine.Create(TriggerType.Application, null, snapshot, settings: TestBlockchain.TheNeoSystem.Settings);
+            engine.LoadScript(script.ToArray());
+
+            Assert.AreEqual(engine.Execute(), VMState.HALT);
+            Assert.AreEqual(3, engine.ResultStack.Count);
+            Assert.AreEqual(1, engine.ResultStack.Pop().GetInteger());
+            Assert.AreEqual(1, engine.ResultStack.Pop().GetInteger());
+            Assert.AreEqual(1, engine.ResultStack.Pop().GetInteger());
+        }
+
+        [TestMethod]
+        public void TestInvalidUtf8Sequence()
+        {
+            // Simulating invalid UTF-8 byte (0xff) decoded as a UTF-16 char
+            const char badChar = (char)0xff;
+            var badStr = badChar.ToString();
+            var snapshot = TestBlockchain.GetTestSnapshot();
+
+            using var script = new ScriptBuilder();
+            script.EmitDynamicCall(NativeContract.StdLib.Hash, "strLen", badStr);
+            script.EmitDynamicCall(NativeContract.StdLib.Hash, "strLen", badStr + "ab");
+
+            using var engine = ApplicationEngine.Create(TriggerType.Application, null, snapshot, settings: TestBlockchain.TheNeoSystem.Settings);
+            engine.LoadScript(script.ToArray());
+
+            Assert.AreEqual(engine.Execute(), VMState.HALT);
+            Assert.AreEqual(2, engine.ResultStack.Count);
+            Assert.AreEqual(3, engine.ResultStack.Pop().GetInteger());
+            Assert.AreEqual(1, engine.ResultStack.Pop().GetInteger());
         }
 
         [TestMethod]

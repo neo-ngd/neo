@@ -1,10 +1,19 @@
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// UT_InteropService.NEO.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
+// for more details.
+//
+// Redistribution and use in source and binary forms with or without
+// modifications are permitted.
+
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Neo.Cryptography;
-using Neo.Cryptography.ECC;
 using Neo.IO;
 using Neo.Network.P2P;
-using Neo.Network.P2P.Payloads;
 using Neo.SmartContract;
 using Neo.SmartContract.Manifest;
 using Neo.SmartContract.Native;
@@ -22,13 +31,13 @@ namespace Neo.UnitTests.SmartContract
         public void TestCheckSig()
         {
             var engine = GetEngine(true);
-            IVerifiable iv = engine.ScriptContainer;
-            byte[] message = iv.GetSignData(ProtocolSettings.Default.Network);
+            var iv = engine.ScriptContainer;
+            var message = iv.GetSignData(TestProtocolSettings.Default.Network);
             byte[] privateKey = { 0x01,0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
                 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
-            KeyPair keyPair = new KeyPair(privateKey);
-            ECPoint pubkey = keyPair.PublicKey;
-            byte[] signature = Crypto.Sign(message, privateKey, pubkey.EncodePoint(false).Skip(1).ToArray());
+            var keyPair = new KeyPair(privateKey);
+            var pubkey = keyPair.PublicKey;
+            var signature = Crypto.Sign(message, privateKey);
             engine.CheckSig(pubkey.EncodePoint(false), signature).Should().BeTrue();
             Action action = () => engine.CheckSig(new byte[70], signature);
             action.Should().Throw<FormatException>();
@@ -38,20 +47,20 @@ namespace Neo.UnitTests.SmartContract
         public void TestCrypto_CheckMultiSig()
         {
             var engine = GetEngine(true);
-            IVerifiable iv = engine.ScriptContainer;
-            byte[] message = iv.GetSignData(ProtocolSettings.Default.Network);
+            var iv = engine.ScriptContainer;
+            var message = iv.GetSignData(TestProtocolSettings.Default.Network);
 
             byte[] privkey1 = { 0x01,0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
                 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
-            KeyPair key1 = new KeyPair(privkey1);
-            ECPoint pubkey1 = key1.PublicKey;
-            byte[] signature1 = Crypto.Sign(message, privkey1, pubkey1.EncodePoint(false).Skip(1).ToArray());
+            var key1 = new KeyPair(privkey1);
+            var pubkey1 = key1.PublicKey;
+            var signature1 = Crypto.Sign(message, privkey1);
 
             byte[] privkey2 = { 0x01,0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
                 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x02};
-            KeyPair key2 = new KeyPair(privkey2);
-            ECPoint pubkey2 = key2.PublicKey;
-            byte[] signature2 = Crypto.Sign(message, privkey2, pubkey2.EncodePoint(false).Skip(1).ToArray());
+            var key2 = new KeyPair(privkey2);
+            var pubkey2 = key2.PublicKey;
+            var signature2 = Crypto.Sign(message, privkey2);
 
             var pubkeys = new[]
             {
@@ -121,12 +130,14 @@ namespace Neo.UnitTests.SmartContract
 
             var script_exceedMaxLength = new NefFile()
             {
-                Script = new byte[NefFile.MaxScriptLength - 1],
+                Script = new byte[ExecutionEngineLimits.Default.MaxItemSize - 50],
                 Source = string.Empty,
                 Compiler = "",
-                Tokens = System.Array.Empty<MethodToken>()
+                Tokens = Array.Empty<MethodToken>()
             };
-            script_exceedMaxLength.CheckSum = NefFile.ComputeChecksum(nef);
+            script_exceedMaxLength.CheckSum = NefFile.ComputeChecksum(script_exceedMaxLength);
+
+            Assert.ThrowsException<FormatException>(() => script_exceedMaxLength.ToArray().AsSerializable<NefFile>());
             Assert.ThrowsException<InvalidOperationException>(() => snapshot.DeployContract(UInt160.Zero, script_exceedMaxLength.ToArray(), manifest.ToJson().ToByteArray(true)));
 
             var script_zeroLength = System.Array.Empty<byte>();
@@ -155,7 +166,7 @@ namespace Neo.UnitTests.SmartContract
                 Script = new[] { (byte)OpCode.RET },
                 Source = string.Empty,
                 Compiler = "",
-                Tokens = System.Array.Empty<MethodToken>()
+                Tokens = Array.Empty<MethodToken>()
             };
             nef.CheckSum = NefFile.ComputeChecksum(nef);
             Assert.ThrowsException<InvalidOperationException>(() => snapshot.UpdateContract(null, nef.ToArray(), new byte[0]));
@@ -163,13 +174,13 @@ namespace Neo.UnitTests.SmartContract
             var manifest = TestUtils.CreateDefaultManifest();
             byte[] privkey = { 0x01,0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
                 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
-            KeyPair key = new KeyPair(privkey);
-            ECPoint pubkey = key.PublicKey;
+            var key = new KeyPair(privkey);
+            var pubkey = key.PublicKey;
             var state = TestUtils.GetContract();
-            byte[] signature = Crypto.Sign(state.Hash.ToArray(), privkey, pubkey.EncodePoint(false).Skip(1).ToArray());
+            var signature = Crypto.Sign(state.Hash.ToArray(), privkey);
             manifest.Groups = new ContractGroup[]
             {
-                new ContractGroup()
+                new()
                 {
                     PubKey = pubkey,
                     Signature = signature

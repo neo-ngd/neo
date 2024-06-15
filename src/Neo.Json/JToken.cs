@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The Neo.Json is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// JToken.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -127,7 +128,7 @@ public abstract class JToken
     /// <param name="value">The byte array that contains the JSON token.</param>
     /// <param name="max_nest">The maximum nesting depth when parsing the JSON token.</param>
     /// <returns>The parsed JSON token.</returns>
-    public static JToken? Parse(ReadOnlySpan<byte> value, int max_nest = 100)
+    public static JToken? Parse(ReadOnlySpan<byte> value, int max_nest = 64)
     {
         Utf8JsonReader reader = new(value, new JsonReaderOptions
         {
@@ -153,7 +154,7 @@ public abstract class JToken
     /// <param name="value">The <see cref="string"/> that contains the JSON token.</param>
     /// <param name="max_nest">The maximum nesting depth when parsing the JSON token.</param>
     /// <returns>The parsed JSON token.</returns>
-    public static JToken? Parse(string value, int max_nest = 100)
+    public static JToken? Parse(string value, int max_nest = 64)
     {
         return Parse(StrictUTF8.GetBytes(value), max_nest);
     }

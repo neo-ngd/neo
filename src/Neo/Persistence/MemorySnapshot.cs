@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// MemorySnapshot.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -25,8 +26,8 @@ namespace Neo.Persistence
         public MemorySnapshot(ConcurrentDictionary<byte[], byte[]> innerData)
         {
             this.innerData = innerData;
-            this.immutableData = innerData.ToImmutableDictionary(ByteArrayEqualityComparer.Default);
-            this.writeBatch = new ConcurrentDictionary<byte[], byte[]>(ByteArrayEqualityComparer.Default);
+            immutableData = innerData.ToImmutableDictionary(ByteArrayEqualityComparer.Default);
+            writeBatch = new ConcurrentDictionary<byte[], byte[]>(ByteArrayEqualityComparer.Default);
         }
 
         public void Commit()

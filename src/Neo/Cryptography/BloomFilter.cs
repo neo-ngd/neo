@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// BloomFilter.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -46,10 +47,12 @@ namespace Neo.Cryptography
         public BloomFilter(int m, int k, uint nTweak)
         {
             if (k < 0 || m < 0) throw new ArgumentOutOfRangeException();
-            this.seeds = Enumerable.Range(0, k).Select(p => (uint)p * 0xFBA4C795 + nTweak).ToArray();
-            this.bits = new BitArray(m);
-            this.bits.Length = m;
-            this.Tweak = nTweak;
+            seeds = Enumerable.Range(0, k).Select(p => (uint)p * 0xFBA4C795 + nTweak).ToArray();
+            bits = new BitArray(m)
+            {
+                Length = m
+            };
+            Tweak = nTweak;
         }
 
         /// <summary>
@@ -62,10 +65,12 @@ namespace Neo.Cryptography
         public BloomFilter(int m, int k, uint nTweak, ReadOnlyMemory<byte> elements)
         {
             if (k < 0 || m < 0) throw new ArgumentOutOfRangeException();
-            this.seeds = Enumerable.Range(0, k).Select(p => (uint)p * 0xFBA4C795 + nTweak).ToArray();
-            this.bits = new BitArray(elements.ToArray());
-            this.bits.Length = m;
-            this.Tweak = nTweak;
+            seeds = Enumerable.Range(0, k).Select(p => (uint)p * 0xFBA4C795 + nTweak).ToArray();
+            bits = new BitArray(elements.ToArray())
+            {
+                Length = m
+            };
+            Tweak = nTweak;
         }
 
         /// <summary>

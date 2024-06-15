@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// NEP6Wallet.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -14,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -62,10 +64,10 @@ namespace Neo.Wallets.NEP6
             else
             {
                 this.name = name;
-                this.version = Version.Parse("1.0");
-                this.Scrypt = ScryptParameters.Default;
-                this.accounts = new Dictionary<UInt160, NEP6Account>();
-                this.extra = JToken.Null;
+                version = Version.Parse("1.0");
+                Scrypt = ScryptParameters.Default;
+                accounts = new Dictionary<UInt160, NEP6Account>();
+                extra = JToken.Null;
             }
         }
 
@@ -84,8 +86,8 @@ namespace Neo.Wallets.NEP6
 
         private void LoadFromJson(JObject wallet, out ScryptParameters scrypt, out Dictionary<UInt160, NEP6Account> accounts, out JToken extra)
         {
-            this.version = Version.Parse(wallet["version"].AsString());
-            this.name = wallet["name"]?.AsString();
+            version = Version.Parse(wallet["version"].AsString());
+            name = wallet["name"]?.AsString();
             scrypt = ScryptParameters.FromJson((JObject)wallet["scrypt"]);
             accounts = ((JArray)wallet["accounts"]).Select(p => NEP6Account.FromJson((JObject)p, this)).ToDictionary(p => p.ScriptHash);
             extra = wallet["extra"];
@@ -222,6 +224,10 @@ namespace Neo.Wallets.NEP6
 
         public override WalletAccount Import(X509Certificate2 cert)
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                throw new PlatformNotSupportedException("Importing certificates is not supported on macOS.");
+            }
             KeyPair key;
             using (ECDsa ecdsa = cert.GetECDsaPrivateKey())
             {

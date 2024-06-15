@@ -1,22 +1,25 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// Helper.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
 using Neo.IO;
 using Neo.Network.P2P.Payloads;
 using Neo.Wallets;
+using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
 using System;
 using System.Buffers.Binary;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using static Neo.Helper;
@@ -98,7 +101,7 @@ namespace Neo.Cryptography
         /// <returns>The computed hash code.</returns>
         public static byte[] Murmur128(this ReadOnlySpan<byte> value, uint seed)
         {
-            byte[] buffer = GC.AllocateUninitializedArray<byte>(16);
+            byte[] buffer = new byte[16];
             using Murmur128 murmur = new(seed);
             murmur.TryComputeHash(value, buffer, out _);
             return buffer;
@@ -151,6 +154,40 @@ namespace Neo.Cryptography
             return Sha256((ReadOnlySpan<byte>)value);
         }
 
+        /// <summary>
+        /// Computes the hash value for the specified byte array using the keccak256 algorithm.
+        /// </summary>
+        /// <param name="value">The input to compute the hash code for.</param>
+        /// <returns>The computed hash code.</returns>
+        public static byte[] Keccak256(this byte[] value)
+        {
+            KeccakDigest keccak = new(256);
+            keccak.BlockUpdate(value, 0, value.Length);
+            byte[] result = new byte[keccak.GetDigestSize()];
+            keccak.DoFinal(result, 0);
+            return result;
+        }
+
+        /// <summary>
+        /// Computes the hash value for the specified byte array using the keccak256 algorithm.
+        /// </summary>
+        /// <param name="value">The input to compute the hash code for.</param>
+        /// <returns>The computed hash code.</returns>
+        public static byte[] Keccak256(this ReadOnlySpan<byte> value)
+        {
+            return Keccak256(value.ToArray());
+        }
+
+        /// <summary>
+        /// Computes the hash value for the specified byte array using the keccak256 algorithm.
+        /// </summary>
+        /// <param name="value">The input to compute the hash code for.</param>
+        /// <returns>The computed hash code.</returns>
+        public static byte[] Keccak256(this Span<byte> value)
+        {
+            return Keccak256(value.ToArray());
+        }
+
         public static byte[] AES256Encrypt(this byte[] plainData, byte[] key, byte[] nonce, byte[] associatedData = null)
         {
             if (nonce.Length != 12) throw new ArgumentOutOfRangeException(nameof(nonce));
@@ -158,7 +195,9 @@ namespace Neo.Cryptography
             var cipherBytes = new byte[plainData.Length];
             if (!IsOSX)
             {
+#pragma warning disable SYSLIB0053 // Type or member is obsolete
                 using var cipher = new AesGcm(key);
+#pragma warning restore SYSLIB0053 // Type or member is obsolete
                 cipher.Encrypt(nonce, plainData, cipherBytes, tag, associatedData);
             }
             else
@@ -186,7 +225,9 @@ namespace Neo.Cryptography
             var decryptedData = new byte[cipherBytes.Length];
             if (!IsOSX)
             {
+#pragma warning disable SYSLIB0053 // Type or member is obsolete
                 using var cipher = new AesGcm(key);
+#pragma warning restore SYSLIB0053 // Type or member is obsolete
                 cipher.Decrypt(nonce, cipherBytes, tag, decryptedData, associatedData);
             }
             else
@@ -238,5 +279,29 @@ namespace Neo.Cryptography
                 return true;
             return false;
         }
+
+        /// <summary>
+        /// Rotates the specified value left by the specified number of bits.
+        /// Similar in behavior to the x86 instruction ROL.
+        /// </summary>
+        /// <param name="value">The value to rotate.</param>
+        /// <param name="offset">The number of bits to rotate by.
+        /// Any value outside the range [0..31] is treated as congruent mod 32.</param>
+        /// <returns>The rotated value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint RotateLeft(uint value, int offset)
+            => (value << offset) | (value >> (32 - offset));
+
+        /// <summary>
+        /// Rotates the specified value left by the specified number of bits.
+        /// Similar in behavior to the x86 instruction ROL.
+        /// </summary>
+        /// <param name="value">The value to rotate.</param>
+        /// <param name="offset">The number of bits to rotate by.
+        /// Any value outside the range [0..63] is treated as congruent mod 64.</param>
+        /// <returns>The rotated value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong RotateLeft(ulong value, int offset)
+            => (value << offset) | (value >> (64 - offset));
     }
 }

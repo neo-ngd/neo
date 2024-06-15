@@ -1,3 +1,14 @@
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// UT_Contract.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
+// for more details.
+//
+// Redistribution and use in source and binary forms with or without
+// modifications are permitted.
+
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Neo.Network.P2P.Payloads;
@@ -153,13 +164,13 @@ namespace Neo.UnitTests.SmartContract
             byte[] verification = Contract.CreateSignatureRedeemScript(key.PublicKey);
             byte[] invocation = new ScriptBuilder().EmitPush(UInt160.Zero).ToArray();
 
-            var fee = PolicyContract.DefaultExecFeeFactor * (ApplicationEngine.OpCodePrices[OpCode.PUSHDATA1] * 2 + ApplicationEngine.OpCodePrices[OpCode.SYSCALL] + ApplicationEngine.CheckSigPrice);
+            var fee = PolicyContract.DefaultExecFeeFactor * (ApplicationEngine.OpCodePriceTable[(byte)OpCode.PUSHDATA1] * 2 + ApplicationEngine.OpCodePriceTable[(byte)OpCode.SYSCALL] + ApplicationEngine.CheckSigPrice);
 
             using (ApplicationEngine engine = ApplicationEngine.Create(TriggerType.Verification, new Transaction { Signers = Array.Empty<Signer>(), Attributes = Array.Empty<TransactionAttribute>() }, null, settings: TestBlockchain.TheNeoSystem.Settings))
             {
                 engine.LoadScript(invocation.Concat(verification).ToArray(), configureState: p => p.CallFlags = CallFlags.None);
                 engine.Execute();
-                engine.GasConsumed.Should().Be(fee);
+                engine.FeeConsumed.Should().Be(fee);
             }
         }
 
@@ -181,13 +192,13 @@ namespace Neo.UnitTests.SmartContract
             byte[] verification = Contract.CreateMultiSigRedeemScript(2, publicKeys);
             byte[] invocation = new ScriptBuilder().EmitPush(UInt160.Zero).EmitPush(UInt160.Zero).ToArray();
 
-            long fee = PolicyContract.DefaultExecFeeFactor * (ApplicationEngine.OpCodePrices[OpCode.PUSHDATA1] * (2 + 2) + ApplicationEngine.OpCodePrices[OpCode.PUSHINT8] * 2 + ApplicationEngine.OpCodePrices[OpCode.SYSCALL] + ApplicationEngine.CheckSigPrice * 2);
+            long fee = PolicyContract.DefaultExecFeeFactor * (ApplicationEngine.OpCodePriceTable[(byte)OpCode.PUSHDATA1] * (2 + 2) + ApplicationEngine.OpCodePriceTable[(byte)OpCode.PUSHINT8] * 2 + ApplicationEngine.OpCodePriceTable[(byte)OpCode.SYSCALL] + ApplicationEngine.CheckSigPrice * 2);
 
             using (ApplicationEngine engine = ApplicationEngine.Create(TriggerType.Verification, new Transaction { Signers = Array.Empty<Signer>(), Attributes = Array.Empty<TransactionAttribute>() }, null, settings: TestBlockchain.TheNeoSystem.Settings))
             {
                 engine.LoadScript(invocation.Concat(verification).ToArray(), configureState: p => p.CallFlags = CallFlags.None);
                 engine.Execute();
-                engine.GasConsumed.Should().Be(fee);
+                engine.FeeConsumed.Should().Be(fee);
             }
         }
     }

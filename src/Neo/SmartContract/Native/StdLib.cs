@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// StdLib.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -26,12 +27,12 @@ namespace Neo.SmartContract.Native
     {
         private const int MaxInputLength = 1024;
 
-        internal StdLib() { }
+        internal StdLib() : base() { }
 
         [ContractMethod(CpuFee = 1 << 12)]
         private static byte[] Serialize(ApplicationEngine engine, StackItem item)
         {
-            return BinarySerializer.Serialize(item, engine.Limits.MaxItemSize);
+            return BinarySerializer.Serialize(item, engine.Limits);
         }
 
         [ContractMethod(CpuFee = 1 << 14)]
@@ -221,6 +222,23 @@ namespace Neo.SmartContract.Native
             if (separator is null) throw new ArgumentNullException(nameof(separator));
             StringSplitOptions options = removeEmptyEntries ? StringSplitOptions.RemoveEmptyEntries : StringSplitOptions.None;
             return str.Split(separator, options);
+        }
+
+        [ContractMethod(CpuFee = 1 << 8)]
+        private static int StrLen([MaxLength(MaxInputLength)] string str)
+        {
+            // return the length of the string in elements
+            // it should return 1 for both  "🦆" and "ã"
+
+            TextElementEnumerator enumerator = StringInfo.GetTextElementEnumerator(str);
+            int count = 0;
+
+            while (enumerator.MoveNext())
+            {
+                count++;
+            }
+
+            return count;
         }
     }
 }

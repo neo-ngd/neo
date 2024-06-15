@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// ContractManifest.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -81,7 +82,7 @@ namespace Neo.SmartContract.Manifest
             {
                 Null _ => WildcardContainer<ContractPermissionDescriptor>.CreateWildcard(),
                 // Array array when array.Any(p => ((ByteString)p).Size == 0) => WildcardContainer<ContractPermissionDescriptor>.CreateWildcard(),
-                Array array => WildcardContainer<ContractPermissionDescriptor>.Create(array.Select(p => new ContractPermissionDescriptor(p.GetSpan())).ToArray()),
+                Array array => WildcardContainer<ContractPermissionDescriptor>.Create(array.Select(ContractPermissionDescriptor.Create).ToArray()),
                 _ => throw new ArgumentException(null, nameof(stackItem))
             };
             Extra = (JObject)JToken.Parse(@struct[7].GetSpan());
@@ -172,10 +173,21 @@ namespace Neo.SmartContract.Manifest
         /// <summary>
         /// Determines whether the manifest is valid.
         /// </summary>
+        /// <param name="limits">The <see cref="ExecutionEngineLimits"/> used for test serialization.</param>
         /// <param name="hash">The hash of the contract.</param>
         /// <returns><see langword="true"/> if the manifest is valid; otherwise, <see langword="false"/>.</returns>
-        public bool IsValid(UInt160 hash)
+        public bool IsValid(ExecutionEngineLimits limits, UInt160 hash)
         {
+            // Ensure that is serializable
+            try
+            {
+                _ = BinarySerializer.Serialize(ToStackItem(null), limits);
+            }
+            catch
+            {
+                return false;
+            }
+            // Check groups
             return Groups.All(u => u.IsValid(hash));
         }
     }

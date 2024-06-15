@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// NotifyEventArgs.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -51,10 +52,10 @@ namespace Neo.SmartContract
         /// <param name="state">The arguments of the event.</param>
         public NotifyEventArgs(IVerifiable container, UInt160 script_hash, string eventName, Array state)
         {
-            this.ScriptContainer = container;
-            this.ScriptHash = script_hash;
-            this.EventName = eventName;
-            this.State = state;
+            ScriptContainer = container;
+            ScriptHash = script_hash;
+            EventName = eventName;
+            State = state;
         }
 
         public void FromStackItem(StackItem stackItem)
@@ -65,11 +66,31 @@ namespace Neo.SmartContract
         public StackItem ToStackItem(ReferenceCounter referenceCounter)
         {
             return new Array(referenceCounter)
+                {
+                    ScriptHash.ToArray(),
+                    EventName,
+                    State
+                };
+        }
+
+        public StackItem ToStackItem(ReferenceCounter referenceCounter, ApplicationEngine engine)
+        {
+            if (engine.IsHardforkEnabled(Hardfork.HF_Domovoi))
             {
-                ScriptHash.ToArray(),
-                EventName,
-                State
-            };
+                return new Array(referenceCounter)
+                {
+                    ScriptHash.ToArray(),
+                    EventName,
+                    State.OnStack ? State : State.DeepCopy(true)
+                };
+            }
+
+            return new Array(referenceCounter)
+                {
+                    ScriptHash.ToArray(),
+                    EventName,
+                    State
+                };
         }
     }
 }

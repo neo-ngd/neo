@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// ApplicationEngine.Crypto.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -19,6 +20,7 @@ namespace Neo.SmartContract
     {
         /// <summary>
         /// The price of System.Crypto.CheckSig.
+        /// In the unit of datoshi, 1 datoshi = 1e-8 GAS
         /// </summary>
         public const long CheckSigPrice = 1 << 15;
 
@@ -65,7 +67,7 @@ namespace Neo.SmartContract
             byte[] message = ScriptContainer.GetSignData(ProtocolSettings.Network);
             int m = signatures.Length, n = pubkeys.Length;
             if (n == 0 || m == 0 || m > n) throw new ArgumentException();
-            AddGas(CheckSigPrice * n * ExecFeeFactor);
+            AddFee(CheckSigPrice * n * ExecFeeFactor);
             try
             {
                 for (int i = 0, j = 0; i < m && j < n;)

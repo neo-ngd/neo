@@ -1,3 +1,14 @@
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// UT_ContractParameter.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
+// for more details.
+//
+// Redistribution and use in source and binary forms with or without
+// modifications are permitted.
+
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Neo.Cryptography.ECC;
@@ -176,8 +187,10 @@ namespace Neo.UnitTests.SmartContract
             ContractParameter contractParameter1 = new();
             Assert.AreEqual("(null)", contractParameter1.ToString());
 
-            ContractParameter contractParameter2 = new(ContractParameterType.ByteArray);
-            contractParameter2.Value = new byte[1];
+            ContractParameter contractParameter2 = new(ContractParameterType.ByteArray)
+            {
+                Value = new byte[1]
+            };
             Assert.AreEqual("00", contractParameter2.ToString());
 
             ContractParameter contractParameter3 = new(ContractParameterType.Array);

@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// ContractMethodMetadata.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -14,6 +15,7 @@ using Neo.Persistence;
 using Neo.SmartContract.Manifest;
 using Neo.VM.Types;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
@@ -21,6 +23,7 @@ using Array = Neo.VM.Types.Array;
 
 namespace Neo.SmartContract.Native
 {
+    [DebuggerDisplay("{Name}")]
     internal class ContractMethodMetadata
     {
         public string Name { get; }
@@ -32,30 +35,34 @@ namespace Neo.SmartContract.Native
         public long StorageFee { get; }
         public CallFlags RequiredCallFlags { get; }
         public ContractMethodDescriptor Descriptor { get; }
+        public Hardfork? ActiveIn { get; init; } = null;
+        public Hardfork? DeprecatedIn { get; init; } = null;
 
         public ContractMethodMetadata(MemberInfo member, ContractMethodAttribute attribute)
         {
-            this.Name = attribute.Name ?? member.Name.ToLower()[0] + member.Name[1..];
-            this.Handler = member switch
+            Name = attribute.Name ?? member.Name.ToLower()[0] + member.Name[1..];
+            Handler = member switch
             {
                 MethodInfo m => m,
                 PropertyInfo p => p.GetMethod,
                 _ => throw new ArgumentException(null, nameof(member))
             };
-            ParameterInfo[] parameterInfos = this.Handler.GetParameters();
+            ParameterInfo[] parameterInfos = Handler.GetParameters();
             if (parameterInfos.Length > 0)
             {
                 NeedApplicationEngine = parameterInfos[0].ParameterType.IsAssignableFrom(typeof(ApplicationEngine));
                 NeedSnapshot = parameterInfos[0].ParameterType.IsAssignableFrom(typeof(DataCache));
             }
             if (NeedApplicationEngine || NeedSnapshot)
-                this.Parameters = parameterInfos.Skip(1).Select(p => new InteropParameterDescriptor(p)).ToArray();
+                Parameters = parameterInfos.Skip(1).Select(p => new InteropParameterDescriptor(p)).ToArray();
             else
-                this.Parameters = parameterInfos.Select(p => new InteropParameterDescriptor(p)).ToArray();
-            this.CpuFee = attribute.CpuFee;
-            this.StorageFee = attribute.StorageFee;
-            this.RequiredCallFlags = attribute.RequiredCallFlags;
-            this.Descriptor = new ContractMethodDescriptor
+                Parameters = parameterInfos.Select(p => new InteropParameterDescriptor(p)).ToArray();
+            CpuFee = attribute.CpuFee;
+            StorageFee = attribute.StorageFee;
+            RequiredCallFlags = attribute.RequiredCallFlags;
+            ActiveIn = attribute.ActiveIn;
+            DeprecatedIn = attribute.DeprecatedIn;
+            Descriptor = new ContractMethodDescriptor
             {
                 Name = Name,
                 ReturnType = ToParameterType(Handler.ReturnType),

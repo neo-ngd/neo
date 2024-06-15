@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// ECPoint.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -48,9 +49,9 @@ namespace Neo.Cryptography.ECC
         {
             if ((x is null ^ y is null) || (curve is null))
                 throw new ArgumentException("Exactly one of the field elements is null");
-            this.X = x;
-            this.Y = y;
-            this.Curve = curve;
+            X = x;
+            Y = y;
+            Curve = curve;
         }
 
         public int CompareTo(ECPoint other)
@@ -201,6 +202,7 @@ namespace Neo.Cryptography.ECC
         {
             if (ReferenceEquals(this, other)) return true;
             if (other is null) return false;
+            if (!Curve.Equals(other.Curve)) return false;
             if (IsInfinity && other.IsInfinity) return true;
             if (IsInfinity || other.IsInfinity) return false;
             return X.Equals(other.X) && Y.Equals(other.Y);
@@ -236,7 +238,7 @@ namespace Neo.Cryptography.ECC
         internal static ECPoint Multiply(ECPoint p, BigInteger k)
         {
             // floor(log2(k))
-            int m = (int)k.GetBitLength();
+            int m = (int)VM.Utility.GetBitLength(k);
 
             // width of the Window NAF
             sbyte width;
@@ -376,21 +378,21 @@ namespace Neo.Cryptography.ECC
 
         internal ECPoint Twice()
         {
-            if (this.IsInfinity)
+            if (IsInfinity)
                 return this;
-            if (this.Y.Value.Sign == 0)
+            if (Y.Value.Sign == 0)
                 return Curve.Infinity;
             ECFieldElement TWO = new(2, Curve);
             ECFieldElement THREE = new(3, Curve);
-            ECFieldElement gamma = (this.X.Square() * THREE + Curve.A) / (Y * TWO);
-            ECFieldElement x3 = gamma.Square() - this.X * TWO;
-            ECFieldElement y3 = gamma * (this.X - x3) - this.Y;
+            ECFieldElement gamma = (X.Square() * THREE + Curve.A) / (Y * TWO);
+            ECFieldElement x3 = gamma.Square() - X * TWO;
+            ECFieldElement y3 = gamma * (X - x3) - Y;
             return new ECPoint(x3, y3, Curve);
         }
 
         private static sbyte[] WindowNaf(sbyte width, BigInteger k)
         {
-            sbyte[] wnaf = new sbyte[k.GetBitLength() + 1];
+            sbyte[] wnaf = new sbyte[VM.Utility.GetBitLength(k) + 1];
             short pow2wB = (short)(1 << width);
             int i = 0;
             int length = 0;

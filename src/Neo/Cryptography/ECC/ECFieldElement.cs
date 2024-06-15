@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// ECFieldElement.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -24,7 +25,7 @@ namespace Neo.Cryptography.ECC
                 throw new ArgumentNullException(nameof(curve));
             if (value >= curve.Q)
                 throw new ArgumentException("x value too large in field element");
-            this.Value = value;
+            Value = value;
             this.curve = curve;
         }
 
@@ -53,7 +54,7 @@ namespace Neo.Cryptography.ECC
 
         private static BigInteger[] FastLucasSequence(BigInteger p, BigInteger P, BigInteger Q, BigInteger k)
         {
-            int n = (int)k.GetBitLength();
+            int n = (int)VM.Utility.GetBitLength(k);
             int s = k.GetLowestSetBit();
 
             BigInteger Uh = 1;
@@ -116,7 +117,7 @@ namespace Neo.Cryptography.ECC
                 return null;
             BigInteger u = qMinusOne >> 2;
             BigInteger k = (u << 1) + 1;
-            BigInteger Q = this.Value;
+            BigInteger Q = Value;
             BigInteger fourQ = (Q << 2).Mod(curve.Q);
             BigInteger U, V;
             do
@@ -125,7 +126,7 @@ namespace Neo.Cryptography.ECC
                 BigInteger P;
                 do
                 {
-                    P = rand.NextBigInteger((int)curve.Q.GetBitLength());
+                    P = rand.NextBigInteger((int)VM.Utility.GetBitLength(curve.Q));
                 }
                 while (P >= curve.Q || BigInteger.ModPow(P * P - fourQ, legendreExponent, curve.Q) != qMinusOne);
                 BigInteger[] result = FastLucasSequence(curve.Q, P, Q, k);

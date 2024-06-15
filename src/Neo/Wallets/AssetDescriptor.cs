@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// AssetDescriptor.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -61,10 +62,10 @@ namespace Neo.Wallets
             }
             using ApplicationEngine engine = ApplicationEngine.Run(script, snapshot, settings: settings, gas: 0_30000000L);
             if (engine.State != VMState.HALT) throw new ArgumentException(null, nameof(asset_id));
-            this.AssetId = asset_id;
-            this.AssetName = contract.Manifest.Name;
-            this.Symbol = engine.ResultStack.Pop().GetString();
-            this.Decimals = (byte)engine.ResultStack.Pop().GetInteger();
+            AssetId = asset_id;
+            AssetName = contract.Manifest.Name;
+            Symbol = engine.ResultStack.Pop().GetString();
+            Decimals = (byte)engine.ResultStack.Pop().GetInteger();
         }
 
         public override string ToString()

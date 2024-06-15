@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// TransactionAttribute.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -12,6 +13,7 @@ using Neo.IO;
 using Neo.IO.Caching;
 using Neo.Json;
 using Neo.Persistence;
+using Neo.SmartContract.Native;
 using System;
 using System.IO;
 
@@ -92,5 +94,7 @@ namespace Neo.Network.P2P.Payloads
         /// <param name="tx">The <see cref="Transaction"/> that contains the attribute.</param>
         /// <returns><see langword="true"/> if the verification passes; otherwise, <see langword="false"/>.</returns>
         public virtual bool Verify(DataCache snapshot, Transaction tx) => true;
+
+        public virtual long CalculateNetworkFee(DataCache snapshot, Transaction tx) => NativeContract.Policy.GetAttributeFee(snapshot, (byte)Type);
     }
 }

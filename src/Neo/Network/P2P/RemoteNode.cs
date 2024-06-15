@@ -1,10 +1,11 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// RemoteNode.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
@@ -82,8 +83,8 @@ namespace Neo.Network.P2P
         {
             this.system = system;
             this.localNode = localNode;
-            this.knownHashes = new HashSetCache<UInt256>(system.MemPool.Capacity * 2 / 5);
-            this.sentHashes = new HashSetCache<UInt256>(system.MemPool.Capacity * 2 / 5);
+            knownHashes = new HashSetCache<UInt256>(system.MemPool.Capacity * 2 / 5);
+            sentHashes = new HashSetCache<UInt256>(system.MemPool.Capacity * 2 / 5);
             localNode.RemoteNodes.TryAdd(Self, this);
         }
 
@@ -208,7 +209,6 @@ namespace Neo.Network.P2P
             };
 
             if (localNode.ListenerTcpPort > 0) capabilities.Add(new ServerCapability(NodeCapabilityType.TcpServer, (ushort)localNode.ListenerTcpPort));
-            if (localNode.ListenerWsPort > 0) capabilities.Add(new ServerCapability(NodeCapabilityType.WsServer, (ushort)localNode.ListenerWsPort));
 
             SendMessage(Message.Create(MessageCommand.Version, VersionPayload.Create(system.Settings.Network, LocalNode.Nonce, LocalNode.UserAgent, capabilities.ToArray())));
         }

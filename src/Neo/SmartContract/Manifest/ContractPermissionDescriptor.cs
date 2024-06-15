@@ -1,16 +1,18 @@
-// Copyright (C) 2015-2022 The Neo Project.
-// 
-// The neo is free software distributed under the MIT software license, 
-// see the accompanying file LICENSE in the main directory of the
-// project or http://www.opensource.org/licenses/mit-license.php 
+// Copyright (C) 2015-2024 The Neo Project.
+//
+// ContractPermissionDescriptor.cs file belongs to the neo project and is free
+// software distributed under the MIT software license, see the
+// accompanying file LICENSE in the main directory of the
+// repository or http://www.opensource.org/licenses/mit-license.php
 // for more details.
-// 
+//
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
 using Neo.Cryptography.ECC;
 using Neo.IO;
 using Neo.Json;
+using Neo.VM.Types;
 using System;
 
 namespace Neo.SmartContract.Manifest
@@ -47,8 +49,8 @@ namespace Neo.SmartContract.Manifest
 
         private ContractPermissionDescriptor(UInt160 hash, ECPoint group)
         {
-            this.Hash = hash;
-            this.Group = group;
+            Hash = hash;
+            Group = group;
         }
 
         internal ContractPermissionDescriptor(ReadOnlySpan<byte> span)
@@ -64,6 +66,11 @@ namespace Neo.SmartContract.Manifest
                 default:
                     throw new ArgumentException(null, nameof(span));
             }
+        }
+
+        public static ContractPermissionDescriptor Create(StackItem item)
+        {
+            return item.Equals(StackItem.Null) ? CreateWildcard() : new ContractPermissionDescriptor(item.GetSpan());
         }
 
         /// <summary>
